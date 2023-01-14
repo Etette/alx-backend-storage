@@ -1,16 +1,22 @@
--- Creates a stored procedure that computes stores
--- sstores overall score for a student
+-- script creates a stored procedure that computes and store
+-- the average score for a student
+
 
 DELIMITER //
-CREATE PROCEDURE ComputeAverageScoreForUser(
-	In user_id INT
-)
+
+CREATE PROCEDURE ComputeAverageScoreForUser(user_id INT)
 BEGIN
-	UPDATE users
-	SET overall_score = (SELECT AVG(score)
-		FROM corrections
-			WHERE corrections.user_id=user_id
-			GROUP BY corrections.user_id)
-		WHERE id=user_id;
+	  DECLARE tot_score INT DEFAULT 0;
+	  DECLARE pro_count INT DEFAULT 0;
+
+	  SELECT SUM(score) INTO tot_score FROM corrections
+	  WHERE corrections.user_id = user_id;
+
+	  SELECT COUNT(*) INTO pro_count FROM corrections
+	  WHERE corrections.user_id = user_id;
+
+	  UPDATE users
+	  SET users.average_score = IF(pro_count = 0, 0, tot_score / pro_count)
+
+	  WHERE users.id = user_id;
 END //
-DELIMITER
